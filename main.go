@@ -3,46 +3,43 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
+	"path"
+
+	"github.com/mastodilu/obsidian-finances/model"
 )
 
 func main() {
 	startingPath := getStartingPath()
 
-	listFiles(startingPath)
+	records := readRecordsAt(startingPath)
 
-	// md, err := model.RecordFromFile("/home/mastodilu/cloud/MEGASync/obsidian/gestionali/1_gestionali/spese/spese/202303101519.md")
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-	// fmt.Printf("%v\n", md.String())
+	var total float32
+	for _, r := range records {
+		total += r.Amount
+	}
+	log.Printf("total: %.2f\n", total)
 }
 
-func listFiles(path string) (names []string, err error) {
-	fileEntries, err := os.ReadDir(path)
+func readRecordsAt(ppath string) []model.Record {
+	fileEntries, err := os.ReadDir(ppath)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("error listing files at %s: %s\n", ppath, err)
 	}
+
+	records := []model.Record{}
 	for _, fe := range fileEntries {
-		if !fe.IsDir() {
-			names = append(names, fe.Name())
-		}
-	}
-
-	log.Println("looking for non-MD files")
-	countMD := 0
-	countOthers := 0
-	for i, name := range names {
-		if strings.HasSuffix(strings.ToLower(name), ".md") {
-			countMD++
+		currentPath := path.Join(ppath, fe.Name())
+		if fe.IsDir() {
+			records = append(records, readRecordsAt(currentPath)...)
 		} else {
-			countOthers++
-			log.Printf("%3d %s", i+1, name)
+			record, err := model.RecordFromFile(currentPath)
+			if err != nil {
+				log.Println(err, currentPath)
+			}
+			records = append(records, record)
 		}
 	}
-
-	log.Printf("found %d files - %d md - %d others", len(names), countMD, countOthers)
-	return names, nil
+	return records
 }
 
 func getStartingPath() string {

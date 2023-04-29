@@ -45,6 +45,8 @@ func GetTransactionType(s string) (TransactionType, error) {
 			return IN_INCOMING, err
 		case strings.Contains(substring, "missing"):
 			return IN_MISSING, err
+		default:
+			return IN, err
 		}
 	}
 	return NONE, fmt.Errorf("transaction_type not found in string '%s'", s)
