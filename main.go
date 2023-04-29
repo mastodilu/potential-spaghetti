@@ -7,8 +7,9 @@ import (
 )
 
 func main() {
+	startingPath := getStartingPath()
 
-	listFiles("/home/mastodilu/cloud/MEGASync/obsidian/gestionali/1_gestionali/spese/spese/")
+	listFiles(startingPath)
 
 	// md, err := model.RecordFromFile("/home/mastodilu/cloud/MEGASync/obsidian/gestionali/1_gestionali/spese/spese/202303101519.md")
 	// if err != nil {
@@ -23,10 +24,9 @@ func listFiles(path string) (names []string, err error) {
 		log.Fatalln(err)
 	}
 	for _, fe := range fileEntries {
-		if fe.IsDir() {
-			panic("🎇🎇🎇 AAAAAHHH 🎇🎇🎇")
+		if !fe.IsDir() {
+			names = append(names, fe.Name())
 		}
-		names = append(names, fe.Name())
 	}
 
 	log.Println("looking for non-MD files")
@@ -43,4 +43,21 @@ func listFiles(path string) (names []string, err error) {
 
 	log.Printf("found %d files - %d md - %d others", len(names), countMD, countOthers)
 	return names, nil
+}
+
+func getStartingPath() string {
+	if len(os.Args) < 2 {
+		log.Fatalln("you need to specify the path where your .md files are")
+	}
+
+	path := os.Args[1]
+
+	info, err := os.Stat(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if !info.IsDir() {
+		log.Fatalf("invalid path `%s`\n", path)
+	}
+	return path
 }
