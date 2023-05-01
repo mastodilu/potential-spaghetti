@@ -15,7 +15,7 @@ func main() {
 
 	var total float32
 	for _, r := range records {
-		total += r.Amount
+		total += r.Amount()
 	}
 	log.Printf("total: %.2f\n", total)
 }

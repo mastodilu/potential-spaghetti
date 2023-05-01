@@ -12,7 +12,7 @@ import (
 
 type Record struct {
 	TransactionType transaction.TransactionType
-	Amount          float32
+	amount          float32
 	MoneyFrom       string
 	MoneyTo         string
 	When            time.Time
@@ -61,7 +61,7 @@ func RecordFromFile(path string) (Record, error) {
 				getStringAfterPrefix(l, TR_TYPE),
 			)
 		case strings.Contains(l, AMOUNT):
-			md.Amount, err = _getAmount(getStringAfterPrefix(l, AMOUNT))
+			md.amount, err = _getAmount(getStringAfterPrefix(l, AMOUNT))
 		case strings.Contains(l, MONEYFROM):
 			md.MoneyFrom = _getMoneyFrom(getStringAfterPrefix(l, MONEYFROM))
 		case strings.Contains(l, MONEYTO):
@@ -116,10 +116,19 @@ func getStringAfterPrefix(s, prefix string) string {
 	return strings.TrimSpace(s[begin+len(prefix):])
 }
 
+func (r *Record) Amount() float32 {
+	switch r.TransactionType {
+	case transaction.OUT:
+		return -r.amount
+	default:
+		return r.amount
+	}
+}
+
 func (r *Record) String() string {
 	return fmt.Sprintf("TransactionType %v\nAmount %.2f\nMoneyFrom %v\nMoneyTo %v\nWhen %v\nCategories %v\nPerson %v\nDescription %v\n",
 		r.TransactionType,
-		r.Amount,
+		r.Amount(),
 		r.MoneyFrom,
 		r.MoneyTo,
 		r.When.Local().Format(DATE_LAYOUT),
