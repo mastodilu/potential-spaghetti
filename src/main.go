@@ -5,14 +5,29 @@ import (
 	"os"
 	"path"
 
-	"github.com/mastodilu/obsidian-finances/model"
+	"github.com/dotenv-org/godotenvvault"
+	"github.com/mastodilu/obsidian-finances/types"
 )
 
 func main() {
+	err := godotenvvault.Load()
+  if err != nil {
+    log.Fatal("Error loading .env file")
+  }
+
 	startingPath := getStartingPath()
 
 	records := readRecordsAt(startingPath)
 
+	// print all wallets
+	for i, record := range records {
+		log.Printf("%3d - %s\n", i+1, record.Description)
+		types.AddWallet(record.MoneyFrom)
+		types.AddWallet(record.MoneyTo)
+		log.Println()
+	}
+	types.PrintWallets()
+	
 	var total float32
 	for _, r := range records {
 		total += r.Amount()
@@ -20,19 +35,19 @@ func main() {
 	log.Printf("total: %.2f\n", total)
 }
 
-func readRecordsAt(ppath string) []model.Record {
+func readRecordsAt(ppath string) []types.Transaction {
 	fileEntries, err := os.ReadDir(ppath)
 	if err != nil {
 		log.Fatalf("error listing files at %s: %s\n", ppath, err)
 	}
 
-	records := []model.Record{}
+	records := []types.Transaction{}
 	for _, fe := range fileEntries {
 		currentPath := path.Join(ppath, fe.Name())
 		if fe.IsDir() {
 			records = append(records, readRecordsAt(currentPath)...)
 		} else {
-			record, err := model.RecordFromFile(currentPath)
+			record, err := types.TransactionFromFile(currentPath)
 			if err != nil {
 				log.Println(err, currentPath)
 			}

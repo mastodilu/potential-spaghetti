@@ -1,4 +1,4 @@
-package model
+package types
 
 import (
 	"fmt"
@@ -6,12 +6,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/mastodilu/obsidian-finances/model/transaction"
 )
 
-type Record struct {
-	TransactionType transaction.TransactionType
+type Transaction struct {
+	TransactionType TransactionType
 	amount          float32
 	MoneyFrom       string
 	MoneyTo         string
@@ -36,8 +34,8 @@ const (
 	DATE_LAYOUT = "2006/01/02"
 )
 
-func RecordFromFile(path string) (Record, error) {
-	md := Record{}
+func TransactionFromFile(path string) (Transaction, error) {
+	md := Transaction{}
 
 	bb, err := os.ReadFile(path)
 	if err != nil {
@@ -57,7 +55,7 @@ func RecordFromFile(path string) (Record, error) {
 		case !strings.HasPrefix(l, "#"):
 			continue
 		case strings.Contains(l, TR_TYPE):
-			md.TransactionType, err = transaction.GetTransactionType(
+			md.TransactionType, err = GetTransactionType(
 				getStringAfterPrefix(l, TR_TYPE),
 			)
 		case strings.Contains(l, AMOUNT):
@@ -116,16 +114,16 @@ func getStringAfterPrefix(s, prefix string) string {
 	return strings.TrimSpace(s[begin+len(prefix):])
 }
 
-func (r *Record) Amount() float32 {
+func (r *Transaction) Amount() float32 {
 	switch r.TransactionType {
-	case transaction.OUT:
+	case OUT:
 		return -r.amount
 	default:
 		return r.amount
 	}
 }
 
-func (r *Record) String() string {
+func (r *Transaction) String() string {
 	return fmt.Sprintf("TransactionType %v\nAmount %.2f\nMoneyFrom %v\nMoneyTo %v\nWhen %v\nCategories %v\nPerson %v\nDescription %v\n",
 		r.TransactionType,
 		r.Amount(),
