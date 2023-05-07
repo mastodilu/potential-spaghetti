@@ -47,9 +47,9 @@ func _establishConnection() {
 	}
 }
 
-func GetInstance() *DB {
+func GetInstance() DB {
 	instance.once.Do(_establishConnection)
-	return &instance
+	return instance
 }
 
 func (d *DB)Close() {
