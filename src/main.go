@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	// laod env vars
 	err := godotenvvault.Load()
   if err != nil {
     log.Fatal("Error loading .env file")
@@ -49,7 +50,7 @@ func readRecordsAt(ppath string) []types.Transaction {
 		} else {
 			record, err := types.TransactionFromFile(currentPath)
 			if err != nil {
-				log.Println(err, currentPath)
+				log.Fatalln(err, currentPath)
 			}
 			records = append(records, record)
 		}

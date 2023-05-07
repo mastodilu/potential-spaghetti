@@ -11,8 +11,8 @@ import (
 type Transaction struct {
 	TransactionType TransactionType
 	amount          float32
-	MoneyFrom       string
-	MoneyTo         string
+	MoneyFrom       Wallet
+	MoneyTo         Wallet
 	When            time.Time
 	Categories      []string
 	Person          string
@@ -45,11 +45,6 @@ func TransactionFromFile(path string) (Transaction, error) {
 	lines := strings.Split(string(bb), "\n")
 
 	for _, l := range lines {
-		// exit if the previous iteration generated an error
-		if err != nil {
-			return md, err
-		}
-
 		switch {
 		// go to next line if string is not a header
 		case !strings.HasPrefix(l, "#"):
@@ -61,9 +56,9 @@ func TransactionFromFile(path string) (Transaction, error) {
 		case strings.Contains(l, AMOUNT):
 			md.amount, err = _getAmount(getStringAfterPrefix(l, AMOUNT))
 		case strings.Contains(l, MONEYFROM):
-			md.MoneyFrom = _getMoneyFrom(getStringAfterPrefix(l, MONEYFROM))
+			md.MoneyFrom = walletFromString(getStringAfterPrefix(l, MONEYFROM))
 		case strings.Contains(l, MONEYTO):
-			md.MoneyTo = _getMoneyTo(getStringAfterPrefix(l, MONEYTO))
+			md.MoneyTo = walletFromString(getStringAfterPrefix(l, MONEYTO))
 		case strings.Contains(l, WHEN):
 			md.When, err = _getWhen(getStringAfterPrefix(l, WHEN))
 		case strings.Contains(l, CATEGORIES):
@@ -72,6 +67,10 @@ func TransactionFromFile(path string) (Transaction, error) {
 			md.Person = _getPerson(getStringAfterPrefix(l, PERSON))
 		case strings.Contains(l, DESCRIPTION):
 			md.Description = _getDescription(getStringAfterPrefix(l, DESCRIPTION))
+		}
+		// exit on error
+		if err != nil {
+			return md, err
 		}
 	}
 
@@ -84,12 +83,6 @@ func _getAmount(s string) (float32, error) {
 		err = fmt.Errorf("error getting the amount from string '%s': %w", s, err)
 	}
 	return float32(n), err
-}
-func _getMoneyFrom(s string) string {
-	return s
-}
-func _getMoneyTo(s string) string {
-	return s
 }
 func _getWhen(s string) (time.Time, error) {
 	s = strings.ReplaceAll(s, "#", "")

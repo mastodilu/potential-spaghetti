@@ -29,16 +29,22 @@ func PrintWallets() {
 	log.Println(wallets)
 }
 
+// walletFromString cleans the label and
+// returns a Wallet from it
+func walletFromString(label string) Wallet{
+	shortLabel := strings.TrimSpace(rx.ReplaceAllString(label, ""))
+	w := Wallet(shortLabel)
+	return w
+}
+
+func (w *Wallet) isInvalid() bool {
+	return strings.Compare(string(*w), "") == 0
+}
+
 // AddWallet add a cleaned wallet to the DB.
 // If successful, it also adds it in the local list of wallets.
-func AddWallet(label string) {
-	shortLabel := rx.ReplaceAllString(label, "")
-	if strings.Compare(shortLabel, "") == 0 {
-		return
-	}
-
-	wallet := Wallet(shortLabel)
-	if wallet.In(wallets) {
+func AddWallet(wallet Wallet) {
+	if wallet.In(wallets) || wallet.isInvalid() {
 		return
 	}
 	
@@ -53,7 +59,7 @@ func AddWallet(label string) {
 			log.Fatalf("error adding wallet to DB: %v", err)
 		}
 	}
-	wallets = append(wallets, Wallet(shortLabel))
+	wallets = append(wallets, wallet)
 }
 
 func (w Wallet)In(ww []Wallet) bool {

@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/mastodilu/obsidian-finances/database"
-	model "github.com/mastodilu/obsidian-finances/types"
+	"github.com/mastodilu/obsidian-finances/types"
 )
 
 // type transaction is an alias over model.Transaction
-type transaction model.Transaction
+type transaction types.Transaction
 
 // var db SQLDBInstance
 
