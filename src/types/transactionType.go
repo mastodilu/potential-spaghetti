@@ -51,3 +51,27 @@ func GetTransactionType(s string) (TransactionType, error) {
 	}
 	return NONE, fmt.Errorf("transaction_type not found in string '%s'", s)
 }
+
+func (tt TransactionType) String() string {
+	switch tt {
+	case OUT:
+		return "out"
+	case CREDIT:
+		return "credit"
+	case DEBIT:
+		return "debit"
+	case TRANSFER:
+		return "transfer"
+	case WITHDRAW:
+		return "withdraw"
+	case IN:
+		return "in"
+	case IN_REFUND:
+		return "in/refund"
+	case IN_INCOMING:
+		return "in/incoming"
+	case IN_MISSING:
+		return "in/missing"
+	}
+	return "none"
+}
