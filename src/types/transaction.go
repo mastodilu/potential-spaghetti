@@ -13,10 +13,11 @@ type Transaction struct {
 	amount          float32
 	MoneyFrom       Wallet
 	MoneyTo         Wallet
-	When            time.Time
+	Date            time.Time
 	Categories      []string
 	Person          string
 	Description     string
+	LastUpdate      time.Time
 }
 
 const (
@@ -24,7 +25,7 @@ const (
 	AMOUNT      = "amount::"
 	MONEYFROM   = "money-from::"
 	MONEYTO     = "money-to::"
-	WHEN        = "when::"
+	DATE        = "when::"
 	CATEGORIES  = "categories::"
 	PERSON      = "person::"
 	DESCRIPTION = "description::"
@@ -54,13 +55,13 @@ func TransactionFromFile(path string) (Transaction, error) {
 				getStringAfterPrefix(l, TR_TYPE),
 			)
 		case strings.Contains(l, AMOUNT):
-			md.amount, err = _getAmount(getStringAfterPrefix(l, AMOUNT))
+			md.amount, err = _getAmountFromString(getStringAfterPrefix(l, AMOUNT))
 		case strings.Contains(l, MONEYFROM):
 			md.MoneyFrom = walletFromString(getStringAfterPrefix(l, MONEYFROM))
 		case strings.Contains(l, MONEYTO):
 			md.MoneyTo = walletFromString(getStringAfterPrefix(l, MONEYTO))
-		case strings.Contains(l, WHEN):
-			md.When, err = _getWhen(getStringAfterPrefix(l, WHEN))
+		case strings.Contains(l, DATE):
+			md.Date, err = _getWhen(getStringAfterPrefix(l, DATE))
 		case strings.Contains(l, CATEGORIES):
 			md.Categories = _getCategories(getStringAfterPrefix(l, CATEGORIES))
 		case strings.Contains(l, PERSON):
@@ -77,13 +78,14 @@ func TransactionFromFile(path string) (Transaction, error) {
 	return md, nil
 }
 
-func _getAmount(s string) (float32, error) {
+func _getAmountFromString(s string) (float32, error) {
 	n, err := strconv.ParseFloat(s, 32)
 	if err != nil {
 		err = fmt.Errorf("error getting the amount from string '%s': %w", s, err)
 	}
 	return float32(n), err
 }
+
 func _getWhen(s string) (time.Time, error) {
 	s = strings.ReplaceAll(s, "#", "")
 	return time.Parse(DATE_LAYOUT, s)
@@ -122,7 +124,7 @@ func (r *Transaction) String() string {
 		r.Amount(),
 		r.MoneyFrom,
 		r.MoneyTo,
-		r.When.Local().Format(DATE_LAYOUT),
+		r.Date.Local().Format(DATE_LAYOUT),
 		r.Categories,
 		r.Person,
 		r.Description,
